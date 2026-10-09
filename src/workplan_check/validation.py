@@ -29,6 +29,8 @@ def _path(value: Any) -> tuple[str | None, str | None]:
         return None, "contains a dot or parent traversal component"
     if any(char in normalized for char in "*?[]"):
         return None, "wildcards are unsupported; use an exact file path"
+    if ":" in normalized:
+        return None, "contains an unsupported colon"
     return "/".join(parts), None
 
 
@@ -76,8 +78,14 @@ def check_plan(document: Any) -> list[Finding]:
             valid = True
             if field in ("id", "title", "artifact", "deadline", "stop_if"):
                 valid = isinstance(value, str) and bool(value.strip())
-            elif field in ("writes", "depends_on", "verify"):
+            elif field in ("writes", "depends_on"):
                 valid = isinstance(value, list)
+            elif field == "verify":
+                valid = (
+                    isinstance(value, list)
+                    and bool(value)
+                    and all(isinstance(item, str) and bool(item.strip()) for item in value)
+                )
             if not valid:
                 findings.append(Finding("invalid_task_field", f"Task '{display_id}' field '{field}' has an invalid value.", (display_id,)))
         if "id" in task and task_id is None:

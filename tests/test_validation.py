@@ -50,7 +50,7 @@ def test_duplicate_task_ids_are_reported():
     assert any("duplicate" in finding.code for finding in findings)
 
 
-@pytest.mark.parametrize("unsafe", ["../outside.py", "/absolute.py", "src/*.py", "src/../outside.py"])
+@pytest.mark.parametrize("unsafe", ["../outside.py", "/absolute.py", "src/*.py", "src/../outside.py", "src/app.py:metadata"])
 def test_unsafe_or_non_exact_paths_are_reported(unsafe: str):
     findings = findings_for(lambda plan: plan["tasks"][0].update(writes=[unsafe], artifact=unsafe))
     assert findings
@@ -59,6 +59,15 @@ def test_unsafe_or_non_exact_paths_are_reported(unsafe: str):
 def test_missing_dependency_is_reported():
     findings = findings_for(lambda plan: plan["tasks"][0].update(depends_on=["absent"]))
     assert any("depend" in finding.code for finding in findings)
+
+
+@pytest.mark.parametrize("verify", [[], None, ["  "], ["ok", 1], [None]])
+def test_verify_must_be_a_nonempty_list_of_nonempty_strings(verify):
+    findings = findings_for(lambda plan: plan["tasks"][0].update(verify=verify))
+    assert any(
+        finding.code == "invalid_task_field" and "verify" in finding.message
+        for finding in findings
+    )
 
 
 def test_dependency_cycle_is_reported():

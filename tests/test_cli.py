@@ -77,3 +77,24 @@ def test_cli_reports_malformed_yaml_with_input_error_status(tmp_path: Path):
     result = run_cli(str(plan_path), "--format", "json")
     assert result.returncode == 2
     assert result.stderr
+
+
+def test_cli_rejects_duplicate_yaml_mapping_keys_with_input_error_status(tmp_path: Path):
+    plan_path = tmp_path / "duplicate-key.yaml"
+    plan_path.write_text(
+        "version: 1\nproject: demo\ntasks:\n"
+        "  - id: parser\n    title: Parse\n"
+        "    writes: [src/shared.py]\n    writes: [src/parser.py]\n"
+        "    depends_on: []\n    verify: [pytest]\n"
+        "    artifact: src/parser.py\n    deadline: tomorrow\n    stop_if: done\n"
+        "  - id: formatter\n    title: Format\n"
+        "    writes: [src/shared.py]\n    depends_on: []\n"
+        "    verify: [pytest]\n    artifact: src/shared.py\n"
+        "    deadline: tomorrow\n    stop_if: done\n",
+        encoding="utf-8",
+    )
+
+    result = run_cli(str(plan_path))
+
+    assert result.returncode == 2
+    assert "duplicate key" in result.stderr
