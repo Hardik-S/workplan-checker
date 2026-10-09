@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "workplan-checker"
+version = "0.1.0"
+description = "Offline pre-dispatch checks for parallel coding-agent work plans"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = ["PyYAML>=6.0,<7"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9", "build>=1,<2"]
+
+[project.scripts]
+workplan-check = "workplan_check.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
