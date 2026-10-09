@@ -1,0 +1,28 @@
+version: 1
+project: independent-example
+tasks:
+  - id: parser
+    title: Parse the input format
+    writes:
+      - src/parser.py
+    reads: []
+    forbidden: []
+    depends_on: []
+    verify:
+      - python -m pytest tests/test_parser.py
+    artifact: src/parser.py
+    deadline: "2026-10-10T09:32:00-04:00"
+    stop_if: Stop after parser behavior and focused tests are complete.
+  - id: formatter
+    title: Format parsed output
+    writes:
+      - src/formatter.py
+    reads:
+      - README.md
+    forbidden: []
+    depends_on: []
+    verify:
+      - python -m pytest tests/test_formatter.py
+    artifact: src/formatter.py
+    deadline: "2026-10-10T09:32:00-04:00"
+    stop_if: Stop after formatter behavior and focused tests are complete.
